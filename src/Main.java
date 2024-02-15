@@ -1,48 +1,69 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Main {
-
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
 
     public static void main(String[] args) {
-        for (int i = 0; i < 10; i++) {
-            new Thread(() -> generateRoute("RLRFR", 10)).start();
+
+        List<Thread> threads = new ArrayList<>();
+
+        for (int i = 0; i < 1000; i++) {
+            Thread logic = new Thread(() -> {
+                String string = generateRoute("RLRFR", 100);
+                int counterR = countOccurrences(string, 'R');
+                updateMap(counterR);
+            });
+            threads.add(logic);
+            logic.start();
         }
+
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        printMap(sizeToFreq);
+
     }
 
-    public static void generateRoute(String letters, int length) {
+    public static String generateRoute(String letters, int length) {
         Random random = new Random();
         StringBuilder route = new StringBuilder();
-        String finalString = null;
         for (int i = 0; i < length; i++) {
-            finalString = String.valueOf(route.append(letters.charAt(random.nextInt(letters.length()))));
+            route.append(letters.charAt(random.nextInt(letters.length())));
         }
-        countOccurrences(finalString, 'R');
+        return route.toString();
     }
 
-    public static void countOccurrences(String str, char ch) {
+    public static int countOccurrences(String str, char symbol) {
         int counterR = 0;
         for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) == ch) {
+            if (str.charAt(i) == symbol) {
                 counterR++;
             }
         }
+        return counterR;
+    }
+
+    public static void updateMap(int counterR) {
         synchronized (sizeToFreq) {
-            int counterString = 1;
-            if (sizeToFreq.containsValue(counterR)) {
-                sizeToFreq.put(++counterString, counterR);
-            } else {
-                sizeToFreq.put(1, counterR);
-            }
+            sizeToFreq.merge(counterR, 1, Integer::sum);
         }
-        printMap(sizeToFreq);
     }
 
     public static void printMap(Map<Integer, Integer> sizeToFreq) {
-        for (Map.Entry<Integer, Integer> entry : sizeToFreq.entrySet()) {
-            System.out.println("-" + entry.getValue() + " (" + entry.getKey() + " раз)");
-        }
+        Optional<Map.Entry<Integer, Integer>> maxEntry = sizeToFreq.entrySet().stream().max(Map.Entry.comparingByValue());
+        int maxValue = maxEntry.get().getKey();
+        System.out.println("Самое частое количество повторений " + maxValue + " (встретилось " + maxEntry.get().getValue() + " раз)");
+        System.out.println("Другие размеры: ");
+        sizeToFreq.forEach((repeats, count) -> System.out.println("-" + repeats + " (" + count + " раз)"));
     }
+
 }
+
+
+
+
