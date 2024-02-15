@@ -56,8 +56,7 @@ public class Main {
 
     public static void printMap(Map<Integer, Integer> sizeToFreq) {
         Optional<Map.Entry<Integer, Integer>> maxEntry = sizeToFreq.entrySet().stream().max(Map.Entry.comparingByValue());
-        int maxValue = maxEntry.get().getKey();
-        System.out.println("Самое частое количество повторений " + maxValue + " (встретилось " + maxEntry.get().getValue() + " раз)");
+        System.out.println("Самое частое количество повторений " + maxEntry.get().getKey() + " (встретилось " + maxEntry.get().getValue() + " раз)");
         System.out.println("Другие размеры: ");
         sizeToFreq.forEach((repeats, count) -> System.out.println("-" + repeats + " (" + count + " раз)"));
     }
